@@ -1,0 +1,213 @@
+<Aod frameRate="60" screenWidth="1080" version="1">
+    <!-- aod模块注意事项；1.动画触发放在下方 Trigger 中；2.动画时长不超过4s，超过部分将会被强制停止；3.动画仅播放一次，此后每分钟刷新一次时间 -->
+    <ExternalCommands>
+        <Trigger action="init">
+            <ExternCommand command="animationState" strPara="'init'"/>
+        </Trigger>
+        <Trigger action="play">
+            <AnimationCommand target="aodAni" command="play"/>
+            <AnimationCommand target="hourAni" command="play"/>
+            <AnimationCommand target="minuteAni" command="play"/>
+            <AnimationCommand target="timeAni" command="play"/>
+            <AnimationCommand target="endAni" command="play"/>
+            <AnimationCommand target="peoAni" command="play"/>
+            <AnimationCommand target="peoAni2" command="play"/>
+            <AnimationCommand target="posAni" command="play"/>
+            <AnimationCommand target="newAni" command="play"/>
+            <AnimationCommand target="cirAni" command="play"/>
+            <AnimationCommand target="notAni" command="play"/>
+        </Trigger>
+    </ExternalCommands>
+    <VariableBinders>
+        <!-- 查询通知 -->
+        <ContentProviderBinder name="data" uri="content://aod.notification/notifications" columns="icon" countName="hasnotifications">
+            <Variable name="notice_icon0" type="blob.bitmap" column="icon" row="0"/>
+            <Variable name="notice_icon1" type="blob.bitmap" column="icon" row="1"/>
+            <Variable name="notice_icon2" type="blob.bitmap" column="icon" row="2"/>
+            <Variable name="notice_icon3" type="blob.bitmap" column="icon" row="3"/>
+        </ContentProviderBinder>
+        <!-- MIUI查询天气 -->
+        <ContentProviderBinder name="weather" uri="content://weather/actualWeatherData/1" columns="temperature,description,weather_type" countName="hasweather" dependency="selected_city">
+            <Variable name="w_tem" type="string" column="temperature"/>
+            <Variable name="w_dp" type="string" column="description"/>
+            <Variable name="w_id" type="int" column="weather_type"/>
+            <Trigger>
+                <VariableCommand name="weatherID" expression="ifelse(#w_id}=4**#w_id{=11,2,#w_id}=12**#w_id{=17,3,#w_id==0,0,1)"/>
+            </Trigger>
+        </ContentProviderBinder>
+    </VariableBinders>
+    <!--角色位置-->
+    <Var name="posAni">
+        <VariableAnimation name="posAnimation" loop="false" initPause="true">
+            <AniFrame value="0" time="0"/>
+            <AniFrame value="0" time="0" easeType="CircEaseOut"/>
+            <AniFrame value="1" time="1200"/>
+            <Triggers>
+                <Trigger action="end" condition="#posAnimation.current_frame==-1">
+                    <!-- 有动画的aod，一定要在 最长的动画 结束之后给系统发个命令，注意：此命令只能存在一个，请勿使用多个 -->
+                    <ExternCommand command="animationState" strPara="'finish'" />
+                </Trigger>
+            </Triggers>
+        </VariableAnimation>
+    </Var>
+    <!--角色不透明度-->
+    <Var name="peoAni">
+        <VariableAnimation loop="false" initPause="true">
+            <AniFrame value="0" time="0"/>
+            <AniFrame value="0" time="0"/>
+            <AniFrame value="1" time="2000"/>
+        </VariableAnimation>
+    </Var>
+    <Var name="peoAni2">
+        <VariableAnimation loop="false" initPause="true">
+            <AniFrame value="0" time="0"/>
+            <AniFrame value="0" time="0"/>
+            <AniFrame value="1" time="4000"/>
+        </VariableAnimation>
+    </Var>
+    <Var name="aodAni">
+        <VariableAnimation loop="false" initPause="true">
+            <AniFrame value="0" time="0"/>
+            <AniFrame value="1" time="500"/>
+        </VariableAnimation>
+    </Var>
+    <Var name="hourAni">
+        <VariableAnimation loop="false" initPause="true">
+            <AniFrame value="0" time="0" easeType="QuartEaseOut"/>
+            <AniFrame value="1" time="2000"/>
+        </VariableAnimation>
+    </Var>
+    <Var name="minuteAni">
+        <VariableAnimation name="minuteAnimation" loop="false" initPause="true">
+            <AniFrame value="0" time="0" easeType="QuadEaseOut"/>
+            <AniFrame value="1" time="2000"/>
+            <Triggers>
+                <Trigger action="end" condition="#minuteAnimation.current_frame==-1">
+                    <!-- 动画结束之后记得给系统发个命令 -->
+                    <ExternCommand command="animationState" strPara="'finish'"/>
+                </Trigger>
+            </Triggers>
+        </VariableAnimation>
+    </Var>
+    <Var expression="#second" threshold="1">
+        <Trigger>
+            <VariableCommand name="nian12345" expression="eq((#year%4),0)*ne((#year%100),0)+eq((#year%400),0)" />
+            <VariableCommand name="yue12345" expression="(ge(#month,1)*31+(28+#nian12345)*ge(#month,2)+ge(#month,3)*31+ge(#month,4)*30+ge(#month,5)*31+ge(#month,6)*30+ge(#month,7)*31+ge(#month,8)*31+ge(#month,9)*30+ge(#month,10)*31+ge(#month,11)*30+ge(#month,12)*31)+(365*#year+int(#year/4)+int(#year/400)-int(#year/100))+#date-1" />
+            <VariableCommand name="hmsabc" expression="#hour24*60+#minute*60+#second" />
+            <VariableCommand name="hmabc" expression="#hour24*60+#minute" />
+            <VariableCommand name="aababc" expression="ifelse(isnull(#aababc),2020,#aababc)" persist="true" />
+            <VariableCommand name="bababc" expression="ifelse(isnull(#bababc),12,#bababc)" persist="true" />
+            <VariableCommand name="cababc" expression="ifelse(isnull(#cababc),26,#cababc)" persist="true" />
+            <VariableCommand name="dababc" expression="ifelse(isnull(#dababc),26,#dababc)" persist="true" />
+            <VariableCommand name="eababc" expression="ifelse(isnull(#eababc),0,#eababc)" persist="true" />
+            <VariableCommand name="fababc" expression="ifelse(isnull(#fababc),0,#fababc)" persist="true" />
+            <VariableCommand name="nian123451" expression="eq((#aababc%4),0)*ne((#aababc%100),0)+eq((#aababc%400),0)" />
+            <VariableCommand name="yue123451" expression="(gt(#bababc,1)*31+(28+#nian123451)*gt(#bababc,2)+gt(#bababc,3)*31+gt(#bababc,4)*30+gt(#bababc,5)*31+gt(#bababc,6)*30+gt(#bababc,7)*31+gt(#bababc,8)*31+gt(#bababc,9)*30+gt(#bababc,10)*31+gt(#bababc,11)*30+gt(#bababc,12)*31)+(365*#aababc+int(#aababc/4)+int(#aababc/400)-int(#aababc/100))+#cababc-1" />
+            <VariableCommand name="hmabc1" expression="#dababc*60+#eababc" />
+            <VariableCommand name="hmsabc1" expression="#dababc*60+#eababc*60+#fababc" />
+        </Trigger>
+    </Var>
+    <Var name="adcedfr" expression="ge(#yue123451*1440+#hmabc1,#yue12345*1440+#hmabc)" />
+    <Var name="cababc2" expression="ifelse(#adcedfr,int(abs(#yue123451-#yue12345)-gt(#hmabc,#hmabc1)),int(abs(#yue123451-#yue12345)-gt(#hmabc1,#hmabc)))" />
+    <Var name="dababc2" expression="ifelse(#adcedfr,int((gt(#hmabc,#hmabc1)*1440+#hmabc1-#hmabc)/60),int((gt(#hmabc1,#hmabc)*1440+#hmabc-#hmabc1)/60))" />
+    <Var name="eababc2" expression="ifelse(#adcedfr,int((gt(#hmabc,#hmabc1)*1440+#hmabc1-#hmabc)%60),int((gt(#hmabc1,#hmabc)*1440+#hmabc-#hmabc1)%60))" />
+    <Var name="adcedfrd" expression="ifelse(#adcedfr,int((gt(#hmsabc,#hmsabc1)*86400+#hmsabc1-#hmsabc)%60),int((gt(#hmsabc1,#hmsabc)*86400+#hmsabc-#hmsabc1)%60))" />
+    <Var name="cababcy" expression="#cababc2/10" />
+    <Var name="cababcx" expression="#cababc2%100" />
+    <Var name="cababca" expression="#cababc2%1000" />
+    <Var name="cababcb" expression="#cababc2%10000" />
+    <Var name="zsc_img" expression="ifelse(isnull(#zsc_img),1,#zsc_img)" const="true"/>
+    <Var name="hour" expression="ifelse(#time_format,#hour24,#hour12,#hour12,12)"/>
+    <Var name="time_small" type="string" expression="ifelse(#time_format,'kk:mm:ss','hh:mm:ss')"/>
+    <Var name="time_small2" type="string" expression="ifelse(#time_format,'kk:mm','hh:mm')"/>
+    <!-- <Text x="380" alignV="center" y="#real_height-616" alignV="center" color="#7f000000" alpha="200"  size="40"  textExp="'本地时间'" visibility="not(#control_center)" /> -->
+    <!-- 分 -->
+    <!-- <Group w="1080" h="1080" layered="true"> -->
+    <!-- <Image x="540" y="360" src="min_M.png" align="center" alignV="center"/> -->
+    <!-- </Group> -->
+    <!-- 时 -->
+    <!-- <Group w="1080" h="1080" layered="true"> -->
+    <!-- <Image x="540" y="360" src="min_H.png" align="center" alignV="center"/> -->
+    <!-- </Group> -->
+    <!-- <Image x="540" y="360" src="M.png" align="center" alignV="center" pivotX="300" pivotY="300" rotation="(#minuteAni-1)*130+#minute*6"/> -->
+    <!-- <Image x="540" y="360" src="H.png" align="center" alignV="center" pivotX="300" pivotY="300" rotation="(#hourAni-1)*130+#hour12*30+#minute/2"/> -->
+    <!-- <Image x="540" y="360" src="core.png" align="center" alignV="center"/> -->
+    <!-- <Image x="540" y="360" align="center" alignV="center" srcid="#aodAni*20" src="img/num.png" /> -->
+    <Group alpha="255*#peoAni" >
+        <Group w="1080" h="1080" layered="true">
+            <Image x="540" y="300" src="daojishi/daojishi.png"  align="center" alignV="center"/>
+        </Group>
+        <Group  >
+            <!-- <Group  name="djs" > -->
+            <!-- <Text x="540" y="860-200"  align="center"   color="#ffffff" size="42" textExp="#dababc2+'时'+#eababc2+'分'+#adcedfrd+'秒'"    /> -->
+            <!-- </Group> -->
+            <Group w="0+#a1.bmp_width+18+#a2.bmp_width" x="540+10"   align="center"  visibility="le(#cababc2,9)"  alpha="255*#peoAni2" >
+                <Image name="a1" x="0-100+(100*#posAni)" y="860-278"   alignV="center" src="date.png" srcid="#cababcx%10" />
+                <Image name="a2" x="0+#a1.bmp_width+28+100-(100*#posAni)" y="860-278"   alignV="center" src="tian.png"  />
+            </Group>
+            <Group    visibility="ge(#cababc2,10)" >
+                <Group align="center"   w="0+#b1.bmp_width+13+#b2.bmp_width+18+#b3.bmp_width" x="540+10"   visibility="le(#cababc2,99)" >
+                    <Image  name="b1" x="0-200+(200*#posAni)" y="860-278"   alignV="center" src="date.png" srcid="#cababcy%10" />
+                    <Image  name="b2" x="0+#b1.bmp_width+13-100+(100*#posAni)" y="860-278"   alignV="center" src="date.png" srcid="#cababcx%10" />
+                    <Image name="b3" x="0+#b1.bmp_width+13+#b2.bmp_width+28+100-(100*#posAni)" y="860-278"   alignV="center" src="tian.png"  />
+                </Group>
+            </Group>
+            <Group    visibility="ge(#cababc2,100)" >
+                <Group align="center"   w="0+#c1.bmp_width+13+#c2.bmp_width+13+#c3.bmp_width+18+#c4.bmp_width" x="540+10"   visibility="le(#cababc2,999)" >
+                    <Image  name="c1" x="0-300+(300*#posAni)" y="860-278"   alignV="center" src="date.png" srcid="#cababca/100" />
+                    <Image  name="c2" x="0+#c1.bmp_width+13-200+(200*#posAni)" y="860-278"   alignV="center" src="date.png"  srcid="#cababcy%10" />
+                    <Image  name="c3" x="0+#c1.bmp_width+13+#c2.bmp_width+13-100+(100*#posAni)" y="860-278"   alignV="center"  src="date.png" srcid="#cababcx%10" />
+                    <Image  name="c4" x="0+#c1.bmp_width+13+#c2.bmp_width+13+#c3.bmp_width+28+100-(100*#posAni)" y="860-278"   alignV="center" src="tian.png"  />
+                </Group>
+            </Group>
+            <Group    visibility="ge(#cababc2,1000)" >
+                <Group align="center"   w="0+#d1.bmp_width+13+#d2.bmp_width+13+#d3.bmp_width+13+#d4.bmp_width+18+#d5.bmp_width" x="540+10"    visibility="le(#cababc2,9999)" >
+                    <Image name="d1" x="0-400+(400*#posAni)" y="860-278"   alignV="center" src="date.png" srcid="#cababcb/1000" />
+                    <Image name="d2" x="0+#d1.bmp_width+13-300+(300*#posAni)" y="860-278"   alignV="center"  src="date.png" srcid="#cababca/100" />
+                    <Image name="d3" x="0+#d1.bmp_width+13+#d2.bmp_width+13-200+(200*#posAni)" y="860-278"   alignV="center" src="date.png" srcid="#cababcy%10" />
+                    <Image name="d4" x="0+#d1.bmp_width+13+#d2.bmp_width+13+#d3.bmp_width+13-100+(100*#posAni)" y="860-278"   alignV="center" src="date.png" srcid="#cababcx%10" />
+                    <Image name="d5" x="0+#d1.bmp_width+13+#d2.bmp_width+13+#d3.bmp_width+13+#d4.bmp_width+28+100-(100*#posAni)" y="860-278"   alignV="center"  src="tian.png"  />
+                </Group>
+            </Group>
+        </Group>
+        <!-- <Image    src="t.png" srcid="int(#hour/10)"    x="364" y="296" align="center" alignV="center" /> -->
+        <!-- <Image    src="t.png" srcid="int(#hour%10)"    x="433" y="296" align="center" alignV="center"  /> -->
+        <!-- <Image    src="t.png" srcid="int(#minute/10)" x="364" y="425" align="center" alignV="center"  /> -->
+        <!-- <Image     src="t.png" srcid="int(#minute%10)" x="433" y="425" align="center" alignV="center" /> -->
+        <!-- <Image  x="245" y="360" align="center" alignV="center"  srcExp="'week_'+#day_of_week+'.png'"  /> -->
+        <DateTime x="540" y="708"  align="center" color="#FF787f" alignV="center" format="@time_small2" size="60"   />
+        <!-- 天气 -->
+        <Text x="540" y="804" align="center" alignV="center" color="#ffd700" size="40" textExp="@w_dp+'  '+@w_tem" bold="true" visibility="len(@w_tem)" />
+        <!-- 日期、农历 -->
+        <DateTime x="540" y="860" align="center" alignV="center" color="#ffffffff" size="40" format="M月d日 YY年 N月e t E" bold="false"/>
+        <!-- 电量 -->
+        <Group y="910+#lunar_calendar_enable*56" w="1080" h="50" alignV="center" visibility="#battery_enable">
+            <Var name="batteryColor" expression="ifelse(#battery_state==1||#battery_state==3,'#ff4CB012','#ffffffff')" type="string" />
+            <Text x="540" y="25" align="right" alignV="center" color="#ffffffff" size="33" textExp="#battery_level+'%'" bold="false"/>
+            <Image src="icon/battery.png" x="552" y="25"   alignV="center"/>
+            <Group x="558" y="25" w="0.56*#battery_level" h="18" alignV="center" clip="true">
+                <Rectangle w="56" h="18" fillColor="@batteryColor" cornerRadius="5"/>
+            </Group>
+            <Image x="558+28" y="25" align="center" alignV="center" src="icon/flash.png" visibility="#battery_state==1||#battery_state==3" />
+        </Group>
+        <!-- 通知图标之间的间隙 -->
+        <!-- <Group y="840+int(#lunar_calendar_enable+#battery_enable)*80" > -->
+        <Var name="noticeSpace" type="number" const="true" expression="60" />
+        <Group y="840+150" >
+            <!-- 预览模式通知 -->
+            <Group visibility="#notification_enable ** #preview_mode">
+                <Image x="540-#noticeSpace*3" w="72" h="72" align="center" srcType="ApplicationIcon" srcExp="'com.android.contacts,com.android.contacts.activities.TwelveKeyDialer'"/>
+                <Image x="540-#noticeSpace*1" w="72" h="72" align="center" srcType="ApplicationIcon" srcExp="'com.android.mms,com.android.mms.ui.MmsTabActivity'"/>
+                <Image x="540+#noticeSpace*1" w="72" h="72" align="center" srcType="ApplicationIcon" srcExp="'com.android.email,com.android.email.activity.Welcome'"/>
+                <Image x="540+#noticeSpace*3" w="72" h="72" align="center" srcType="ApplicationIcon" srcExp="'com.android.thememanager,com.android.thememanager.ThemeResourceTabActivity'"/>
+            </Group>
+            <!-- 息屏真实通知 -->
+            <Group x="-min(#hasnotifications-1,3)*#noticeSpace" visibility="#notification_enable ** !#preview_mode">
+                <Image name="notice_icon0" x="540+#noticeSpace*0" w="72" h="72" align="center" visibility="#hasnotifications}=1"/>
+                <Image name="notice_icon1" x="540+#noticeSpace*2" w="72" h="72" align="center" visibility="#hasnotifications}=2"/>
+                <Image name="notice_icon2" x="540+#noticeSpace*4" w="72" h="72" align="center" visibility="#hasnotifications}=3"/>
+                <Image name="notice_icon3" x="540+#noticeSpace*6" w="72" h="72" align="center" visibility="#hasnotifications}=4"/>
+            </Group>
+        </Group>
+    </Group>
+</Aod>
